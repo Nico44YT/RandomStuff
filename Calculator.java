@@ -1,7 +1,4 @@
 /**
- *
- * Description
- *
  * @version 1.0 from 17.02.2024
  * @author Nico_44
  */
@@ -26,8 +23,9 @@ public class Calculator {
     public static String[] commands = new String[]{
             "'vars' get a list of all variables.",
             "'formulas' get a list of basic math formulas",
-            "'set' to set or edit a variable. 'set x = 5'",
-            "'remove' to remove a variable. 'remove x'",
+            "'set <name> = <value>' to set or edit a variable. 'set x = 5'",
+            "'remove <name>' to remove a variable. 'remove x'",
+            "'function <equaton>' PLACEHOLDER. 'function x+5'",
             "Type any mathematical equation and it will calculate it."
     };
 
@@ -286,6 +284,60 @@ public class Calculator {
         saveVariables(userDir + "/nico-calculator");
     }
 
+    public static void handleFunctions(String str) {
+        str = str.toUpperCase();
+        str = str.replace("FUNCTION", "");
+
+        String resultSpacer = "", inputSpacer = "";
+
+        double startValue = 0d, endValue = 10d, stepValue = 0d;
+        int inputLength = 0, resultLength = 0;
+
+        System.out.print("\nStart value (0): ");
+        startValue = input.nextDouble();
+        System.out.print("End value (10): ");
+        endValue = input.nextDouble();
+        System.out.print("Step value (1): ");
+        stepValue = input.nextDouble();
+
+        HashMap<String, String> results = new HashMap<String,String>();
+
+        for(double i = startValue;i<endValue;i+=stepValue) {
+            String[] tokens = tokenize(str);
+            for(int j = 0;j<tokens.length;j++) {
+                if(tokens[j].equals("X")) {
+                    tokens[j] = String.valueOf(i);
+                }
+            }
+
+            while(Arrays.toString(tokens).contains("+") || Arrays.toString(tokens).contains("*") || Arrays.toString(tokens).contains("/") || Arrays.toString(tokens).contains("^")) {
+                tokens = calc(tokens, 0, tokens.length);
+                tokens = removeDoneCalcs(tokens);
+            }
+            if(resultLength < tokens[0].length()) {
+                resultLength = tokens[0].length()+2;
+            }
+            if(inputLength < String.valueOf(i).length()) {
+                inputLength = String.valueOf(i).length()+2;
+            }
+            results.put(String.valueOf(i),tokens[0]);
+        }
+
+        for(int i = 0;i<inputLength;i++) {
+
+            inputSpacer += "-";
+        }
+        for(int i = 0;i<resultLength;i++) {
+            resultSpacer += "-";
+        }
+
+        for(String key : results.keySet()) {
+            System.out.println("X: " + key + " Y: " + results.get(key));
+        }
+
+        System.out.println("");
+    }
+
     //Save and Load, variables
 
     public static void createFolder(String path, String folderName) {
@@ -339,57 +391,4 @@ public class Calculator {
             System.out.println("There has been an error loading your configuration: " + e.getMessage());
         }
     }
-
-    public static void handleFunctions(String str) {
-        str = str.toUpperCase();
-        str = str.replace("FUNCTION", "");
-
-        String resultSpacer = "", inputSpacer = "";
-
-        double startValue = 0d, endValue = 10d, stepValue = 0d;
-        int inputLength = 0, resultLength = 0;
-
-        System.out.print("\nStart value (0): ");
-        startValue = input.nextDouble();
-        System.out.print("\nEnd value (10): ");
-        endValue = input.nextDouble();
-        System.out.print("\nStep value (1): ");
-        stepValue = input.nextDouble();
-
-        HashMap<String, String> results = new HashMap<String,String>();
-
-        for(double i = startValue;i<endValue;i+=stepValue) {
-            String[] tokens = tokenize(str);
-            for(int j = 0;j<tokens.length;j++) {
-                if(tokens[j].equals("X")) {
-                    tokens[j] = String.valueOf(i);
-                }
-            }
-
-            while(Arrays.toString(tokens).contains("+") || Arrays.toString(tokens).contains("*") || Arrays.toString(tokens).contains("/") || Arrays.toString(tokens).contains("^")) {
-                tokens = calc(tokens, 0, tokens.length);
-                tokens = removeDoneCalcs(tokens);
-            }
-            if(resultLength < tokens[0].length()) {
-                resultLength = tokens[0].length()+2;
-            }
-            if(inputLength < String.valueOf(i).length()) {
-                inputLength = String.valueOf(i).length()+2;
-            }
-            results.put(String.valueOf(i),tokens[0]);
-        }
-
-        for(int i = 0;i<inputLength;i++) {
-
-            inputSpacer += "-";
-        }
-        for(int i = 0;i<resultLength;i++) {
-            resultSpacer += "-";
-        }
-
-        for(String key : results.keySet()) {
-            System.out.println("X: " + key + " Y: " + results.get(key));
-        }
-    }
-
 }
