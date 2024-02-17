@@ -3,7 +3,7 @@
  * Description
  *
  * @version 1.0 from 17.02.2024
- * @author Nico
+ * @author Nico_44
  */
 
 import java.io.*;
@@ -223,15 +223,15 @@ public class Calculator {
         str = str.toUpperCase();
         str = str.replace(" ", "");
 
-        //Variables like PI, E, and user set once.
-        for(String key : variables.keySet()) {
-            str = str.replace(key, String.valueOf(variables.get(key)));
-        }
-
         String[] splittedString = str.split("(?=[)(*+/^-])|(?<=[)(*+/^-])");
         List<String> tokens = new ArrayList<>();
 
         for(String token : splittedString) {
+            for(String key : variables.keySet()) {
+                if(key.equals(token)) {
+                    token = String.valueOf(variables.get(key));
+                }
+            }
             tokens.add(token);
 
             String[] newTokens = negativeConvertion(tokens.toArray(new String[tokens.size()]));
@@ -239,31 +239,6 @@ public class Calculator {
             for(String innerToken : newTokens) {
                 tokens.add(innerToken);
             }
-
-            //OLD
-            /*
-
-            if(!token.contains("-")) {
-                tokens.add(token);
-            } else {
-                String[] splits = token.split("-");
-                /*if (!(splits[0].equals("") || splits[0].equals("+") || splits[0].equals("*") || splits[0].equals("/"))) {
-                    tokens.add("0");
-                    tokens.add("+");
-                }
-
-            if(splits[1] != "") {
-                if(splits[0].length() > 0) {
-                    tokens.add(splits[0]);
-                } else {
-                    tokens.add("0");
-                }
-                tokens.add("+");
-                tokens.add("-" + splits[1]);
-            }
-            if(showDebug) System.out.println("MINUS: " +  Arrays.toString(splits));
-        }
-             */
         }
 
         if(showDebug) {
@@ -271,7 +246,6 @@ public class Calculator {
         }
         return tokens.toArray(new String[tokens.size()]);
     }
-
     public static String[] negativeConvertion(String[] tokens) {
         for(int i = 0;i<tokens.length-1;i++) {
             if(tokens[i].equals("-")) {
