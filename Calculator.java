@@ -12,6 +12,11 @@ public class Calculator {
     public static final String projectFolder = "nico-calculator";
     public static boolean showDebug = false;
     public static HashMap<String, Double> variables = new HashMap<>();
+
+    public static String[] illegalVariableNames = new String[]{
+            "X","PI","E","Y","HELP","VARS","-","+","*","(",")","/"
+    };
+
     public static String[] formulas = new String[]{
             "Area of a rectangle: A = length * width",
             "Area of a triangle: A = 1/2 * base * height",
@@ -296,9 +301,15 @@ public class Calculator {
         String[] strParts = str.split("(?=[=])|(?<=[=])");
         String[] varTokens = tokenize(strParts[2]);
 
-        while(Arrays.toString(varTokens).contains("+") || Arrays.toString(varTokens).contains("*") || Arrays.toString(varTokens).contains("/") || Arrays.toString(varTokens).contains("^")) {
+        if(Arrays.asList(illegalVariableNames).contains(strParts[0])) {
+            System.out.println("\nVariable '" + strParts[0] + "' cannot be set or modified.");
+            return;
+        }
+
+        while(varTokens.length > 1) {
             varTokens = calc(varTokens, 0, varTokens.length);
             varTokens = removeDoneCalcs(varTokens);
+            if(showDebug) System.out.println("CALC: " + Arrays.toString(varTokens));
         }
 
         if(!variables.containsKey(strParts[0])) {
@@ -317,21 +328,28 @@ public class Calculator {
         str = str.toUpperCase();
         str = str.replace("FUNCTION", "");
 
-        String resultSpacer = "", inputSpacer = "";
-
         double startValue = 0d, endValue = 10d, stepValue = 0d;
-        int inputLength = 0, resultLength = 0;
 
         System.out.print("\nStart value (e.g. 0): ");
-        startValue = input.nextDouble();
+        startValue = Double.valueOf(input.nextLine());
         System.out.print("End value (e.g. 10): ");
-        endValue = input.nextDouble();
+        endValue = Double.valueOf(input.nextLine());
         System.out.print("Step value (e.g. 1): ");
-        stepValue = input.nextDouble();
+        stepValue = Double.valueOf(input.nextLine());
 
-        HashMap<String, String> results = new HashMap<String,String>();
+        if(stepValue == 0d) {
+            boolean untilRight = true;
+            while(untilRight) {
+                System.out.print("\nStep value was not valid '" + stepValue + "'\nStep value (e.g. 1): ");
+                stepValue = Double.valueOf(input.nextLine());
 
-        for(double i = startValue;i<endValue;i+=stepValue) {
+                if(stepValue != 0d) {
+                    untilRight = false;
+                }
+            }
+        }
+
+        for(double i = startValue;i<=endValue&&i>=startValue;i+=stepValue) {
             String[] tokens = tokenize(str);
             for(int j = 0;j<tokens.length;j++) {
                 if(tokens[j].equals("X")) {
@@ -343,25 +361,8 @@ public class Calculator {
                 tokens = calc(tokens, 0, tokens.length);
                 tokens = removeDoneCalcs(tokens);
             }
-            if(resultLength < tokens[0].length()) {
-                resultLength = tokens[0].length()+2;
-            }
-            if(inputLength < String.valueOf(i).length()) {
-                inputLength = String.valueOf(i).length()+2;
-            }
-            results.put(String.valueOf(i),tokens[0]);
-        }
 
-        for(int i = 0;i<inputLength;i++) {
-
-            inputSpacer += "-";
-        }
-        for(int i = 0;i<resultLength;i++) {
-            resultSpacer += "-";
-        }
-
-        for(String key : results.keySet()) {
-            System.out.println("X: " + key + " Y: " + results.get(key));
+            System.out.println("X: " + i + " Y: " + tokens[0]);
         }
 
         System.out.println("");
