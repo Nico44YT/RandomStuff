@@ -35,7 +35,7 @@ public class Calculator {
         createFolder(userDir, projectFolder);
         loadVariables(userDir +"/"+ projectFolder);
 
-        System.out.println("Nico's simple calculator\n" + "Type 'help' to get a list of commands.");
+        System.out.println("Nico's simple calculator\n" + "Type 'help' to get a list of commands.\n" + "Version: 1.1");
 
         variables.put("PI", Math.PI);
         variables.put("E", Math.E);
@@ -59,9 +59,10 @@ public class Calculator {
         if(handleCommands(nextLineInput)) return;
 
         String[] tokens = tokenize(nextLineInput);
-        while(Arrays.toString(tokens).contains("+") || Arrays.toString(tokens).contains("*") || Arrays.toString(tokens).contains("/") || Arrays.toString(tokens).contains("^")) {
+        while(tokens.length > 1) {
             tokens = calc(tokens, 0, tokens.length);
             tokens = removeDoneCalcs(tokens);
+            if(showDebug) System.out.println("CALC: " + Arrays.toString(tokens));
         }
 
         System.out.println("= " + Double.parseDouble(tokens[0]) + "\n");
@@ -130,7 +131,7 @@ public class Calculator {
     }
 
     public static String[] calc(String[] tokens, int start, int end) {
-        String[] brackets = new String[]{"(",")","{","}"};
+        String[] brackets = new String[]{"(",")"};
         boolean hasCalculated = false;
         double result = 0;
         int index = 0;
@@ -187,6 +188,17 @@ public class Calculator {
             }
         }
 
+        if(Arrays.toString(tokens).contains("%") && !hasCalculated) {
+            for(int i = start;i<end;i++) {
+                if(tokens[i].contains("%")) {
+                    result = Double.parseDouble(tokens[i-1]) % Double.parseDouble(tokens[i+1]);
+                    hasCalculated = true;
+                    index = i;
+                    break;
+                }
+            }
+        }
+
         if(Arrays.toString(tokens).contains("+") && !hasCalculated) {
             for(int i = start;i<end;i++) {
                 if(tokens[i].contains("+")) {
@@ -221,7 +233,7 @@ public class Calculator {
         str = str.toUpperCase();
         str = str.replace(" ", "");
 
-        String[] splittedString = str.split("(?=[)(*+/^-])|(?<=[)(*+/^-])");
+        String[] splittedString = str.split("(?=[%)(*+/^-])|(?<=[%)(*+/^-])");
         List<String> tokens = new ArrayList<>();
 
         for(String token : splittedString) {
@@ -255,6 +267,23 @@ public class Calculator {
                 tokens[i+1] = "-"+tokens[i+1];
             }
         }
+
+        for(int i = 0;i<tokens.length-1;i++) {
+            if(tokens[i].equals("-(")) {
+                for(int j = i;j<tokens.length;j++) {
+                    if(tokens[j].equals(")")) {
+                        String[] newTokens = calc(tokens.clone(), i, j);
+                        tokens[i] = "-" + String.valueOf(newTokens[newTokens.length-2]);
+                        tokens[j] = "REMOVE";
+                        for(int x = j;x>i;x--) {
+                            tokens[x] = "REMOVE";
+                        }
+                    }
+                }
+                tokens = removeDoneCalcs(tokens);
+            }
+        }
+
         tokens = removeDoneCalcs(tokens);
         return tokens;
     }
@@ -293,11 +322,11 @@ public class Calculator {
         double startValue = 0d, endValue = 10d, stepValue = 0d;
         int inputLength = 0, resultLength = 0;
 
-        System.out.print("\nStart value (0): ");
+        System.out.print("\nStart value (e.g. 0): ");
         startValue = input.nextDouble();
-        System.out.print("End value (10): ");
+        System.out.print("End value (e.g. 10): ");
         endValue = input.nextDouble();
-        System.out.print("Step value (1): ");
+        System.out.print("Step value (e.g. 1): ");
         stepValue = input.nextDouble();
 
         HashMap<String, String> results = new HashMap<String,String>();
@@ -310,7 +339,7 @@ public class Calculator {
                 }
             }
 
-            while(Arrays.toString(tokens).contains("+") || Arrays.toString(tokens).contains("*") || Arrays.toString(tokens).contains("/") || Arrays.toString(tokens).contains("^")) {
+            while(tokens.length > 1) {
                 tokens = calc(tokens, 0, tokens.length);
                 tokens = removeDoneCalcs(tokens);
             }
